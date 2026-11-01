@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import { Skeleton } from '../components/ui';
@@ -10,7 +10,6 @@ import { Skeleton } from '../components/ui';
  */
 export default function DashboardRedirect() {
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -29,7 +28,6 @@ export default function DashboardRedirect() {
       } catch (err) {
         if (!isMounted) return;
         console.error('[DASHBOARD REDIRECT ERROR]:', err);
-        setError(err.message || 'Could not verify events');
         navigate('/onboarding', { replace: true });
       }
     }

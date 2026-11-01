@@ -7,9 +7,6 @@ import { ideasOutputSchema } from '../schemas/step4Schemas.js';
 export function getDeterministicIdeas(event, kind, refine = '') {
   const type = event.type || 'wedding';
   const guests = Number(event.guest_count) || 100;
-  const budget = Number(event.budget_total) || 500000;
-  const perGuest = Math.round(budget / guests);
-
   const library = {
     wedding: {
       theme: [

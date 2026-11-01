@@ -229,7 +229,7 @@ export default function Onboarding() {
         {currentStep === 1 && (
           <div className={styles.formSection}>
             <div>
-              <label className={styles.reviewLabel}>Select Event Type *</label>
+              <div className={styles.reviewLabel}>Select Event Type *</div>
               <div className={styles.typeGrid} role="radiogroup" aria-label="Event Type">
                 {EVENT_TYPE_OPTIONS.map((opt) => {
                   const isSelected = formData.type === opt.type;
@@ -325,7 +325,7 @@ export default function Onboarding() {
             </div>
 
             <div>
-              <label className={styles.reviewLabel}>Event Vibe & Aesthetic *</label>
+              <div className={styles.reviewLabel}>Event Vibe & Aesthetic *</div>
               <div className={styles.vibeGrid} role="radiogroup" aria-label="Event Vibe">
                 {EVENT_VIBES.map((v) => {
                   const isSelected = formData.vibe === v;
@@ -352,7 +352,7 @@ export default function Onboarding() {
         {currentStep === 4 && (
           <div className={styles.formSection}>
             <div>
-              <label className={styles.reviewLabel}>Special Accommodations</label>
+              <div className={styles.reviewLabel}>Special Accommodations</div>
               <div className={styles.checkboxGrid}>
                 {SPECIAL_NEEDS_OPTIONS.map((opt) => {
                   const isChecked = formData.special_needs?.tags?.includes(opt.id);

@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import Ideas from '../pages/dashboard/Ideas';
 import FloatingAssistant from '../components/assistant/FloatingAssistant';
 import * as EventContextModule from '../context/EventContext';
-import * as ApiModule from '../lib/api';
 import { ToastProvider } from '../components/ui';
 
 describe('Step 4 Client Components (Ideas & Floating Assistant)', () => {

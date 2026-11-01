@@ -5,7 +5,6 @@ import { supabaseAdmin } from '../lib/supabase.js';
 import {
   rescueBudget,
   getDeterministicBudgetRescue,
-  draftVendorEnquiry,
   getDeterministicVendorEnquiry,
 } from '../services/aiRescueAndEnquiryService.js';
 import {

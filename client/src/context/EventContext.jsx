@@ -6,7 +6,7 @@ import {
   useCallback,
   useMemo,
 } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import { useToast } from '../components/ui';
 
@@ -22,7 +22,6 @@ export function useEvent() {
 
 export function EventProvider({ children }) {
   const { eventId } = useParams();
-  const navigate = useNavigate();
   const { addToast } = useToast();
 
   const [event, setEvent] = useState(null);
@@ -69,9 +68,17 @@ export function EventProvider({ children }) {
   }, [addToast]);
 
   useEffect(() => {
+    let ignore = false;
     if (eventId) {
-      loadEventData(eventId);
+      Promise.resolve().then(() => {
+        if (!ignore) {
+          loadEventData(eventId);
+        }
+      });
     }
+    return () => {
+      ignore = true;
+    };
   }, [eventId, loadEventData]);
 
   /* =====================================================================

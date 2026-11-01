@@ -10,7 +10,7 @@ import FloatingAssistant from '../../assistant/FloatingAssistant';
 function ShellContent() {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const { event, userEvents, loading, error, refreshEvent } = useEvent();
+  const { userEvents, loading, error, refreshEvent } = useEvent();
   const { user, isGuest, signOut } = useAuth();
   const [bannerDismissed, setBannerDismissed] = useState(false);
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generatePlan, planCache } from '../services/aiPlanService.js';
+import { generatePlan } from '../services/aiPlanService.js';
 import { env } from '../config/env.js';
 
 describe('AI Plan Service with Gemini mock', () => {

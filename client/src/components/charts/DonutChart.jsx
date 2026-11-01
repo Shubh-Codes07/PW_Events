@@ -25,22 +25,21 @@ export default function DonutChart({
 
   const totalValue = slices.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
 
-  let accumulatedPercent = 0;
-
-  const renderedSlices = slices.map((slice) => {
-    const val = Number(slice.value) || 0;
-    const percent = totalValue > 0 ? val / totalValue : 0;
-    const strokeDasharray = `${percent * circumference} ${circumference}`;
-    const strokeDashoffset = -accumulatedPercent * circumference;
-    accumulatedPercent += percent;
-
-    return {
-      ...slice,
-      percent: Math.round(percent * 100),
-      strokeDasharray,
-      strokeDashoffset,
-    };
-  });
+  const { renderedSlices } = slices.reduce(
+    (acc, slice) => {
+      const val = Number(slice.value) || 0;
+      const percent = totalValue > 0 ? val / totalValue : 0;
+      acc.renderedSlices.push({
+        ...slice,
+        percent: Math.round(percent * 100),
+        strokeDasharray: `${percent * circumference} ${circumference}`,
+        strokeDashoffset: -acc.accumulatedPercent * circumference,
+      });
+      acc.accumulatedPercent += percent;
+      return acc;
+    },
+    { accumulatedPercent: 0, renderedSlices: [] },
+  );
 
   return (
     <div className={styles.container}>

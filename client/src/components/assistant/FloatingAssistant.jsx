@@ -88,7 +88,7 @@ export default function FloatingAssistant() {
 
       const reply = res.data?.reply || 'I am ready to help with your event planning!';
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
-    } catch (err) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {

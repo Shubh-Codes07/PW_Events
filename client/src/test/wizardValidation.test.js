@@ -3,7 +3,6 @@ import {
   step1Schema,
   step2Schema,
   step3Schema,
-  step4Schema,
   createEventSchema,
 } from '@shared/eventSchemas';
 

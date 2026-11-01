@@ -75,9 +75,51 @@ cd client && npm run dev
 ### 5. Run tests
 
 ```bash
-cd client && npm test
-cd server && npm test
+# Run all tests
+npm test
+
+# Run with code coverage
+npm run coverage
 ```
+
+## Testing
+
+Utsav includes comprehensive unit, integration, and security test suites across both client and server:
+
+### Test Commands
+
+```bash
+# Run all client and server test suites
+npm test
+
+# Run client tests only
+npm run test:client
+# or cd client && npm test
+
+# Run server tests only
+npm run test:server
+# or cd server && npm test
+
+# Run test coverage reports (vitest --coverage)
+npm run coverage
+# or within individual workspaces:
+cd client && npm run coverage
+cd server && npm run coverage
+```
+
+### What Is Covered
+
+- **Guest / Anonymous Access & Abuse Prevention**: Seamless one-click anonymous authentication, strict cross-account isolation, and per-user 10-event creation cap enforcement with graceful database degradation.
+- **Shared Plan Security & Token Rotation**: Read-only public plan access via cryptographic share tokens with strict field whitelisting (never exposing owner IDs, memory keys, or internal IDs) and secure token revocation/rotation.
+- **Centralized Error Handling**: Express middleware verifying operational vs unexpected 500 error sanitization, stack trace concealment in production, and structured JSON logs.
+- **AI Plan Generation & Curated Fallbacks**: Resilience against Gemini API timeouts, HTTP 500 errors, and malformed JSON with deterministic, culturally authentic fallbacks across wedding, birthday, and community event types.
+- **Ideas & Floating Assistant Endpoints**: Context assembly, validation constraints, save/toggle state management, and offline AI fallbacks.
+- **Client Pages & User Workflows**:
+  - **Landing Page**: Unauthenticated CTAs, instant one-click guest evaluation flow, celebration category highlights, and feature breakdown.
+  - **Timeline Page**: Chronological milestone rendering, category-based filtering, quick milestone creation, completion toggling, and editing modal.
+  - **Vendors Page**: Category grouping, vendor creation modal, booking status updates, and multilingual Gemini WhatsApp enquiry drafting.
+  - **Overview Page**: Celebration countdown, ₹ digit formatting, Next-Best-Action completion, and read-only share link modal with token regeneration.
+  - **Budget & Rescue**: Real-time allocation, expense tracking, and the AI Budget Rescue modal flow.
 
 ## Project Structure
 

@@ -4,12 +4,11 @@ import { formatINR, parseINR } from '../../lib/currency';
 import { apiFetch } from '../../lib/api';
 import {
   Button,
-  Input,
-  Select,
-  Modal,
   useToast,
 } from '../../components/ui';
 import styles from './Vendors.module.css';
+import VendorFormModal from './components/VendorFormModal';
+import VendorEnquiryModal from './components/VendorEnquiryModal';
 
 const VENDOR_STATUS_OPTIONS = [
   { value: 'to_contact', label: 'To Contact' },
@@ -152,7 +151,7 @@ export default function Vendors() {
   const handleQuickStatusChange = async (vendorId, status) => {
     try {
       await updateVendor(vendorId, { status });
-    } catch (err) {
+    } catch {
       addToast({ message: 'Failed to update vendor status', type: 'error' });
     }
   };
@@ -360,138 +359,42 @@ export default function Vendors() {
       )}
 
       {/* Add / Edit Vendor Modal */}
-      <Modal
+      <VendorFormModal
         isOpen={vendorModalOpen}
         onClose={() => setVendorModalOpen(false)}
-        title={editingVendor ? 'Edit Vendor Details' : 'Add New Vendor'}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setVendorModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleSaveVendor} disabled={isSavingVendor}>
-              {isSavingVendor ? 'Saving...' : 'Save Vendor'}
-            </Button>
-          </>
-        }
-      >
-        <form onSubmit={handleSaveVendor} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div className={styles.formGrid}>
-            <Input
-              label="Vendor / Business Name *"
-              value={vendorName}
-              onChange={(e) => setVendorName(e.target.value)}
-              required
-            />
-            <Input
-              label="Category *"
-              value={vendorCategory}
-              onChange={(e) => setVendorCategory(e.target.value)}
-              placeholder="e.g. Catering, Photography"
-              required
-            />
-          </div>
-
-          <div className={styles.formGrid}>
-            <Select
-              label="Booking Status"
-              options={VENDOR_STATUS_OPTIONS}
-              value={vendorStatus}
-              onChange={(e) => setVendorStatus(e.target.value)}
-            />
-            <Input
-              label="Quotation Amount (₹)"
-              placeholder="e.g. 75,000"
-              value={vendorQuoteStr}
-              onChange={(e) => setVendorQuoteStr(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.formGrid}>
-            <Input
-              label="Phone Number"
-              placeholder="+91 9876543210"
-              value={vendorPhone}
-              onChange={(e) => setVendorPhone(e.target.value)}
-            />
-            <Input
-              type="email"
-              label="Email Address"
-              placeholder="vendor@example.com"
-              value={vendorEmail}
-              onChange={(e) => setVendorEmail(e.target.value)}
-            />
-          </div>
-
-          <Input
-            multiline
-            label="Notes & Package Deliverables"
-            placeholder="e.g. Includes drone shoot, album, 2 videographers."
-            value={vendorNotes}
-            onChange={(e) => setVendorNotes(e.target.value)}
-          />
-        </form>
-      </Modal>
+        editingVendor={editingVendor}
+        vendorName={vendorName}
+        setVendorName={setVendorName}
+        vendorCategory={vendorCategory}
+        setVendorCategory={setVendorCategory}
+        vendorStatus={vendorStatus}
+        setVendorStatus={setVendorStatus}
+        vendorQuoteStr={vendorQuoteStr}
+        setVendorQuoteStr={setVendorQuoteStr}
+        vendorPhone={vendorPhone}
+        setVendorPhone={setVendorPhone}
+        vendorEmail={vendorEmail}
+        setVendorEmail={setVendorEmail}
+        vendorNotes={vendorNotes}
+        setVendorNotes={setVendorNotes}
+        statusOptions={VENDOR_STATUS_OPTIONS}
+        onSaveVendor={handleSaveVendor}
+        isSavingVendor={isSavingVendor}
+      />
 
       {/* AI Vendor Enquiry Modal */}
-      <Modal
+      <VendorEnquiryModal
         isOpen={enquiryModalOpen}
         onClose={() => setEnquiryModalOpen(false)}
-        title={`Draft Enquiry for ${selectedVendorForEnquiry?.name || 'Vendor'}`}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setEnquiryModalOpen(false)}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleCopyMessage} disabled={!enquiryMessage}>
-              📋 Copy Message
-            </Button>
-            <a
-              href={whatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <Button variant="accent">
-                📲 Open in WhatsApp →
-              </Button>
-            </a>
-          </>
-        }
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-              Choose language for personalized AI draft:
-            </span>
-            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-              {LANGUAGE_OPTIONS.map((lang) => (
-                <Button
-                  key={lang.value}
-                  variant={enquiryLanguage === lang.value ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => handleLanguageChange(lang.value)}
-                  disabled={isDraftingEnquiry}
-                >
-                  {lang.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {isDraftingEnquiry ? (
-            <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-              ✨ Crafting polite cultural enquiry with Gemini...
-            </div>
-          ) : (
-            <div className={styles.enquiryBox}>{enquiryMessage}</div>
-          )}
-
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-            💡 You can edit or personalize this text in WhatsApp or your email app before sending.
-          </div>
-        </div>
-      </Modal>
+        selectedVendor={selectedVendorForEnquiry}
+        enquiryLanguage={enquiryLanguage}
+        enquiryMessage={enquiryMessage}
+        isDraftingEnquiry={isDraftingEnquiry}
+        languageOptions={LANGUAGE_OPTIONS}
+        whatsAppUrl={whatsAppUrl}
+        onLanguageChange={handleLanguageChange}
+        onCopyMessage={handleCopyMessage}
+      />
     </div>
   );
 }

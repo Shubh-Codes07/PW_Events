@@ -76,7 +76,7 @@ export default function Timeline() {
     const nextStatus = task.status === 'done' ? 'todo' : 'done';
     try {
       await updateTask(task.id, { status: nextStatus });
-    } catch (err) {
+    } catch {
       addToast({ message: 'Failed to update task status', type: 'error' });
     }
   };

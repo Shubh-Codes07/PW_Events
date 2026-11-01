@@ -179,5 +179,74 @@ describe('Step 4c Server Abuse Protection & Anonymous Auth', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.event.id).toBe('new-ev-id');
     });
+
+    it('proceeds with event creation and sets authenticated user as owner if count query errors', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Mock AI offline in test'));
+
+      vi.spyOn(supabaseAdmin.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'resilient-user-id',
+            is_anonymous: true,
+          },
+        },
+        error: null,
+      });
+
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 45);
+      const eventDate = futureDate.toISOString().split('T')[0];
+
+      let fromCallCount = 0;
+      vi.spyOn(supabaseAdmin, 'from').mockImplementation((table) => {
+        if (table === 'events') {
+          fromCallCount++;
+          if (fromCallCount === 1) {
+            // Count query returns database error
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockResolvedValue({ count: null, error: new Error('Count timeout') }),
+            };
+          }
+          // Insert query
+          return {
+            insert: vi.fn().mockReturnThis(),
+            select: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: 'degraded-ev-id',
+                name: 'Degraded Count Event',
+                owner_id: 'resilient-user-id',
+              },
+              error: null,
+            }),
+          };
+        }
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
+        };
+      });
+
+      const res = await request(app)
+        .post('/api/events')
+        .set('Authorization', 'Bearer valid-jwt')
+        .send({
+          type: 'community',
+          name: 'Degraded Count Event',
+          event_date: eventDate,
+          city: 'Delhi',
+          guest_count: 80,
+          budget_total: 150000,
+          vibe: 'Traditional',
+          special_needs: { tags: [], notes: '' },
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.event.id).toBe('degraded-ev-id');
+      expect(res.body.data.event.owner_id).toBe('resilient-user-id');
+    });
   });
 });

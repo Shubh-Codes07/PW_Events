@@ -11,7 +11,6 @@ export default function Overview() {
   const {
     eventId,
     event,
-    categories,
     tasks,
     totalBudget,
     totalSpent,

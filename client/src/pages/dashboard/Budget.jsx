@@ -9,19 +9,18 @@ import { apiFetch } from '../../lib/api';
 import {
   Button,
   Card,
-  Input,
-  Select,
-  Modal,
   ProgressBar,
   useToast,
 } from '../../components/ui';
 import DonutChart from '../../components/charts/DonutChart';
 import styles from './Budget.module.css';
+import BudgetRescueModal from './components/BudgetRescueModal';
+import EditCategoryModal from './components/EditCategoryModal';
+import ExpenseTracker from './components/ExpenseTracker';
 
 export default function Budget() {
   const {
     eventId,
-    event,
     categories,
     expenses,
     totalBudget,
@@ -103,17 +102,18 @@ export default function Budget() {
       });
       setExpenseDesc('');
       setExpenseAmount('');
+      setExpenseCatId('');
     } catch (err) {
-      addToast({ message: err.message || 'Failed to add expense', type: 'error' });
+      addToast({ message: err.message || 'Failed to record expense', type: 'error' });
     } finally {
       setIsAddingExpense(false);
     }
   };
 
-  // Open Edit Category Modal
-  const openEditCategory = (category) => {
-    setEditingCategory(category);
-    setEditAmountStr(category.planned_amount.toString());
+  // Open Edit Category
+  const openEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setEditAmountStr(cat.planned_amount.toString());
     setAutoRebalance(true);
   };
 
@@ -121,25 +121,33 @@ export default function Budget() {
   const handleSaveCategory = async () => {
     if (!editingCategory) return;
     const newAmount = parseINR(editAmountStr);
-    setIsUpdatingCategory(true);
+    if (newAmount < 0) {
+      addToast({ message: 'Please enter a valid amount.', type: 'warning' });
+      return;
+    }
 
+    setIsUpdatingCategory(true);
     try {
       if (autoRebalance) {
-        // Compute proportional rebalance
         const rebalanced = rebalanceCategories(
           categories,
           editingCategory.id,
           newAmount,
           totalBudget,
         );
-        const updates = rebalanced.map((c) => ({
-          id: c.id,
-          planned_amount: c.planned_amount,
-        }));
-        await batchUpdateCategories(updates);
+        await batchUpdateCategories(
+          rebalanced.map((c) => ({
+            id: c.id,
+            planned_amount: c.planned_amount,
+          })),
+        );
+        addToast({
+          message: 'Allocations updated & other categories proportionally rebalanced.',
+          type: 'success',
+        });
       } else {
         await updateCategory(editingCategory.id, { planned_amount: newAmount });
-        addToast({ message: 'Category planned amount updated!', type: 'success' });
+        addToast({ message: 'Category allocation updated.', type: 'success' });
       }
       setEditingCategory(null);
     } catch (err) {
@@ -149,8 +157,8 @@ export default function Budget() {
     }
   };
 
-  // Trigger Budget Rescue AI
-  const handleTriggerRescue = async () => {
+  // Run Budget Rescue
+  const handleRunRescue = async () => {
     setIsRescuing(true);
     try {
       const res = await apiFetch(`/events/${eventId}/budget-rescue`, {
@@ -159,44 +167,38 @@ export default function Budget() {
       setRescuePlan(res.data);
       setRescueModalOpen(true);
     } catch (err) {
-      addToast({
-        message: err.message || 'Failed to run Budget Rescue. Please try again.',
-        type: 'error',
-      });
+      addToast({ message: err.message || 'Budget rescue failed. Please try again.', type: 'error' });
     } finally {
       setIsRescuing(false);
     }
   };
 
-  // Accept Budget Rescue Plan
+  // Accept Rescue Adjustments
   const handleAcceptRescue = async () => {
-    if (!rescuePlan || !rescuePlan.adjustments) return;
+    if (!rescuePlan || !rescuePlan.adjustments || rescuePlan.adjustments.length === 0) return;
+
     setIsApplyingRescue(true);
-
     try {
-      // Map adjustments to categories
-      const categoryMap = new Map(categories.map((c) => [c.name.toLowerCase().trim(), c]));
       const updates = [];
-
-      rescuePlan.adjustments.forEach((adj) => {
-        const cat = categoryMap.get(adj.category.toLowerCase().trim());
+      for (const adj of rescuePlan.adjustments) {
+        const cat = categories.find(
+          (c) => c.name.toLowerCase() === adj.category.toLowerCase(),
+        );
         if (cat) {
-          const current = Number(cat.planned_amount) || 0;
-          const adjusted =
-            adj.action === 'increase'
-              ? current + Number(adj.amount)
-              : Math.max(0, current - Number(adj.amount));
-          updates.push({ id: cat.id, planned_amount: Math.round(adjusted) });
+          const delta = adj.action === 'increase' ? adj.amount : -adj.amount;
+          const newPlanned = Math.max(0, cat.planned_amount + delta);
+          updates.push({ id: cat.id, planned_amount: newPlanned });
         }
-      });
+      }
 
       if (updates.length > 0) {
         await batchUpdateCategories(updates);
-        addToast({ message: 'Budget Rescue adjustments applied!', type: 'success' });
+        addToast({ message: 'Budget Rescue adjustments successfully applied!', type: 'success' });
       }
       setRescueModalOpen(false);
+      setRescuePlan(null);
     } catch (err) {
-      addToast({ message: err.message || 'Failed to apply rescue plan', type: 'error' });
+      addToast({ message: err.message || 'Could not apply rescue adjustments.', type: 'error' });
     } finally {
       setIsApplyingRescue(false);
     }
@@ -204,25 +206,6 @@ export default function Budget() {
 
   return (
     <div className={styles.container}>
-      {/* Header Row */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <h1 className={styles.title}>Budget Planner</h1>
-          <p className={styles.subtitle}>
-            Manage allocations, record actual vendor spend, and rebalance effortlessly.
-          </p>
-        </div>
-
-        <Button
-          variant={isOverBudget ? 'danger' : 'accent'}
-          onClick={handleTriggerRescue}
-          disabled={isRescuing}
-          aria-label="Run Budget Rescue analysis"
-        >
-          {isRescuing ? 'Analyzing with AI...' : isOverBudget ? '🚨 Run Budget Rescue' : '✨ AI Budget Optimization'}
-        </Button>
-      </div>
-
       {/* Prominent Budget Alert when over plan */}
       {isOverBudget && (
         <div className={styles.rescueBanner} role="alert">
@@ -236,59 +219,71 @@ export default function Budget() {
               Use Budget Rescue to rebalance without expanding your total debt.
             </div>
           </div>
-          <Button variant="danger" size="sm" onClick={handleTriggerRescue} disabled={isRescuing}>
+          <Button variant="danger" size="sm" onClick={handleRunRescue} disabled={isRescuing}>
             Rescue Budget Now →
           </Button>
         </div>
       )}
 
-      {/* Financial Summary Cards */}
-      <div className={styles.summaryGrid}>
-        <div className={styles.statCard}>
+      {/* Top Financial Stat Cards */}
+      <div className={styles.statGrid}>
+        <Card className={styles.statCard}>
           <div className={styles.statLabel}>Total Budget</div>
-          <div className={styles.statValue} style={{ color: 'var(--color-primary)' }}>
-            {formatINR(totalBudget)}
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Total Spent</div>
+          <div className={styles.statValue}>{formatINR(totalBudget)}</div>
+          <div className={styles.statHint}>Target celebration spend</div>
+        </Card>
+
+        <Card className={styles.statCard}>
+          <div className={styles.statLabel}>Total Actual Outflow</div>
           <div className={styles.statValue}>{formatINR(totalSpent)}</div>
-        </div>
-        <div className={styles.statCard}>
+          <div className={styles.statHint}>Recorded payments & advances</div>
+        </Card>
+
+        <Card className={styles.statCard}>
           <div className={styles.statLabel}>Remaining Funds</div>
           <div
             className={styles.statValue}
             style={{
-              color: totalRemaining < 0 ? 'var(--color-danger)' : 'var(--color-success)',
+              color: isOverBudget ? 'var(--color-danger)' : 'var(--color-success)',
             }}
           >
-            {totalRemaining < 0 ? `- ${formatINR(Math.abs(totalRemaining))}` : formatINR(totalRemaining)}
+            {formatINR(totalRemaining)}
           </div>
-        </div>
+          <div className={styles.statHint}>
+            {isOverBudget ? 'Over allocated budget' : 'Available for pending expenses'}
+          </div>
+        </Card>
       </div>
 
-      {/* Donut Chart & Category Table */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
-        <Card>
-          <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>
-            Allocation Breakdown
+      {/* Chart & Category Allocation Section */}
+      <div className={styles.categorySection}>
+        <div className={styles.chartCol}>
+          <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>
+            Category Distribution
           </h2>
           <DonutChart
             slices={categorySlices}
-            centerLabel="Total Planned"
-            centerValue={formatINR(totalBudget)}
-            title="Category allocation visual"
-            showTable={true}
+            centerLabel="Actual Outflow"
+            centerValue={formatINR(totalSpent)}
+            title="Category allocation breakdown"
           />
-        </Card>
+        </div>
 
-        {/* Categories Table */}
-        <div className={styles.tableContainer}>
-          <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>
-            Categories & Allocations
-          </h2>
+        <div className={styles.listCol}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: 'var(--text-lg)' }}>Planned Category Allocations</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRunRescue}
+              disabled={isRescuing}
+            >
+              {isRescuing ? 'Analyzing...' : 'AI Budget Advisor'}
+            </Button>
+          </div>
+
           <table className={styles.table}>
-            <caption className="visually-hidden">Budget categories and planned versus actual spending</caption>
+            <caption className="visually-hidden">Budget allocation by category</caption>
             <thead>
               <tr>
                 <th scope="col">Category</th>
@@ -345,207 +340,42 @@ export default function Budget() {
       </div>
 
       {/* Expenses Tracker Section */}
-      <div className={styles.expenseSection}>
-        <div>
-          <h2 style={{ fontSize: 'var(--text-lg)' }}>Record Actual Expenses</h2>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>
-            Log bills, advances, and vendor payments to keep real-time track of outflows.
-          </p>
-        </div>
-
-        {/* Add Expense Form */}
-        <form className={styles.expenseForm} onSubmit={handleAddExpense}>
-          <Input
-            label="Description *"
-            placeholder="e.g. Venue booking token advance"
-            value={expenseDesc}
-            onChange={(e) => setExpenseDesc(e.target.value)}
-            required
-          />
-          <Input
-            label="Amount (₹) *"
-            placeholder="e.g. 50,000"
-            value={expenseAmount}
-            onChange={(e) => setExpenseAmount(e.target.value)}
-            required
-          />
-          <Select
-            label="Category"
-            options={categoryOptions}
-            value={expenseCatId}
-            onChange={(e) => setExpenseCatId(e.target.value)}
-          />
-          <Button type="submit" variant="primary" disabled={isAddingExpense}>
-            {isAddingExpense ? 'Adding...' : '+ Add Expense'}
-          </Button>
-        </form>
-
-        {/* Expense History Table */}
-        <table className={styles.table}>
-          <caption className="visually-hidden">List of recorded expenses</caption>
-          <thead>
-            <tr>
-              <th scope="col">Date</th>
-              <th scope="col">Description</th>
-              <th scope="col">Category</th>
-              <th scope="col">Amount</th>
-              <th scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.length > 0 ? (
-              expenses.map((exp) => {
-                const cat = categories.find((c) => c.id === exp.category_id);
-                return (
-                  <tr key={exp.id}>
-                    <td>
-                      {new Date(exp.created_at).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    </td>
-                    <td>{exp.description}</td>
-                    <td>{cat ? cat.name : 'General'}</td>
-                    <td>
-                      <strong>{formatINR(exp.amount)}</strong>
-                    </td>
-                    <td>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteExpense(exp.id)}
-                        aria-label={`Delete expense ${exp.description}`}
-                      >
-                        🗑️
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-6)' }}>
-                  No expenses recorded yet. Use the form above to add your first bill or payment receipt!
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ExpenseTracker
+        expenses={expenses}
+        categories={categories}
+        categoryOptions={categoryOptions}
+        expenseDesc={expenseDesc}
+        setExpenseDesc={setExpenseDesc}
+        expenseAmount={expenseAmount}
+        setExpenseAmount={setExpenseAmount}
+        expenseCatId={expenseCatId}
+        setExpenseCatId={setExpenseCatId}
+        isAddingExpense={isAddingExpense}
+        onAddExpense={handleAddExpense}
+        onDeleteExpense={deleteExpense}
+      />
 
       {/* Edit Category Planned Amount Modal with Proportional Rebalance */}
-      <Modal
-        isOpen={Boolean(editingCategory)}
+      <EditCategoryModal
+        editingCategory={editingCategory}
         onClose={() => setEditingCategory(null)}
-        title={`Edit Planned Allocation: ${editingCategory?.name}`}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setEditingCategory(null)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleSaveCategory} disabled={isUpdatingCategory}>
-              {isUpdatingCategory ? 'Saving...' : 'Save Allocation'}
-            </Button>
-          </>
-        }
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <Input
-            label="New Planned Amount (₹) *"
-            value={editAmountStr}
-            onChange={(e) => setEditAmountStr(e.target.value)}
-            hint={`Current: ${formatINR(editingCategory?.planned_amount || 0)}`}
-          />
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={autoRebalance}
-              onChange={(e) => setAutoRebalance(e.target.checked)}
-            />
-            <span>
-              <strong>Auto-rebalance other categories proportionally</strong> so total budget stays strictly at {formatINR(totalBudget)}.
-            </span>
-          </label>
-        </div>
-      </Modal>
+        editAmountStr={editAmountStr}
+        setEditAmountStr={setEditAmountStr}
+        autoRebalance={autoRebalance}
+        setAutoRebalance={setAutoRebalance}
+        onSaveCategory={handleSaveCategory}
+        isUpdatingCategory={isUpdatingCategory}
+        totalBudget={totalBudget}
+      />
 
       {/* Budget Rescue AI Modal */}
-      <Modal
+      <BudgetRescueModal
         isOpen={rescueModalOpen}
         onClose={() => setRescueModalOpen(false)}
-        title="🚨 Utsav AI Budget Rescue"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setRescueModalOpen(false)}>
-              Dismiss
-            </Button>
-            <Button
-              variant="accent"
-              onClick={handleAcceptRescue}
-              disabled={isApplyingRescue || !rescuePlan?.adjustments?.length}
-            >
-              {isApplyingRescue ? 'Applying...' : 'Accept All Adjustments ✓'}
-            </Button>
-          </>
-        }
-      >
-        {rescuePlan && (
-          <div className={styles.rescueModalContent}>
-            <p style={{ fontSize: 'var(--text-sm)', lineHeight: 'var(--leading-relaxed)' }}>
-              {rescuePlan.summary}
-            </p>
-
-            <div>
-              <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>
-                Proposed Adjustments
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                {rescuePlan.adjustments?.length > 0 ? (
-                  rescuePlan.adjustments.map((adj, i) => (
-                    <div
-                      key={i}
-                      className={`${styles.adjustmentItem} ${
-                        adj.action === 'increase'
-                          ? styles['adjustmentItem--increase']
-                          : styles['adjustmentItem--reduce']
-                      }`}
-                    >
-                      <div className={styles.adjustmentDetails}>
-                        <strong>{adj.category}</strong>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          {adj.reason}
-                        </span>
-                      </div>
-                      <div style={{ fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
-                        {adj.action === 'increase' ? '+' : '-'}
-                        {formatINR(adj.amount)}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-                    No critical adjustments needed.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {rescuePlan.tradeoffs?.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)' }}>
-                  Practical Tradeoffs & Tips
-                </h3>
-                <ul className={styles.tradeoffsList}>
-                  {rescuePlan.tradeoffs.map((t, i) => (
-                    <li key={i}>{t}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
+        rescuePlan={rescuePlan}
+        onAcceptRescue={handleAcceptRescue}
+        isApplyingRescue={isApplyingRescue}
+      />
     </div>
   );
 }
