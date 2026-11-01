@@ -1,0 +1,130 @@
+/* =============================================================
+   Utsav Design Tokens
+   Warm, festive, accessible colour palette with light & dark themes.
+   ============================================================= */
+
+:root {
+  /* ---- Colour — Light theme ---- */
+  --color-bg:            #FFF9F0;
+  --color-bg-alt:        #FFF3E0;
+  --color-surface:       #FFFFFF;
+  --color-surface-hover: #FFF5E6;
+  --color-border:        #E8DDD0;
+
+  --color-primary:       #3B1F5C;
+  --color-primary-hover: #4E2D78;
+  --color-primary-text:  #FFFFFF;
+
+  --color-accent:        #F4A300;
+  --color-accent-hover:  #D88F00;
+  --color-accent-text:   #1A1000;
+
+  --color-text:          #1E1024;
+  --color-text-muted:    #6B5E7A;
+
+  --color-success:       #0E7B3F;
+  --color-success-bg:    #E6F5EC;
+  --color-warning:       #B45309;
+  --color-warning-bg:    #FEF3C7;
+  --color-danger:        #BE123C;
+  --color-danger-bg:     #FFE4E6;
+
+  /* ---- Typography ---- */
+  --font-heading: 'Fraunces', serif;
+  --font-body:    'Inter', sans-serif;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* ---- Spacing ---- */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ---- Radius ---- */
+  --radius-sm:   0.25rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.5rem;
+  --radius-full: 9999px;
+
+  /* ---- Shadows ---- */
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+
+  /* ---- Transitions ---- */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-default:  cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Z-index ---- */
+  --z-dropdown:  10;
+  --z-sticky:    20;
+  --z-overlay:   30;
+  --z-modal:     40;
+  --z-toast:     50;
+
+  /* ---- Layout ---- */
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --bottom-bar-height: 64px;
+  --content-max-width: 1200px;
+}
+
+/* ---- Dark theme ---- */
+[data-theme='dark'] {
+  --color-bg:            #13091E;
+  --color-bg-alt:        #1C0F2D;
+  --color-surface:       #231438;
+  --color-surface-hover: #2D1B48;
+  --color-border:        #3D2B55;
+
+  --color-primary:       #C9A8F0;
+  --color-primary-hover: #D9C0F7;
+  --color-primary-text:  #13091E;
+
+  --color-accent:        #FFBE42;
+  --color-accent-hover:  #FFD070;
+  --color-accent-text:   #1A1000;
+
+  --color-text:          #F0EAF5;
+  --color-text-muted:    #A899BA;
+
+  --color-success:       #34D399;
+  --color-success-bg:    #0B2E1F;
+  --color-warning:       #FBBF24;
+  --color-warning-bg:    #2E1E04;
+  --color-danger:        #FB7185;
+  --color-danger-bg:     #2E0A14;
+
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}

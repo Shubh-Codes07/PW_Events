@@ -1,0 +1,295 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---- Sidebar (desktop) ---- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-sticky);
+  overflow-y: auto;
+}
+
+.logo {
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logoBrand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.logoEmoji {
+  font-size: var(--text-3xl);
+}
+
+/* Event Switcher */
+.eventSwitcherWrapper {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.eventSwitcherLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-1);
+  display: block;
+}
+
+.eventSwitcherSelect {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.nav {
+  flex: 1;
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+}
+
+.navLink:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.navLink--active {
+  background: var(--color-bg-alt);
+  color: var(--color-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.navIcon {
+  font-size: var(--text-lg);
+  width: 24px;
+  text-align: center;
+}
+
+.sidebarFooter {
+  padding: var(--space-4) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.accountArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.userEmail {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.guestBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px 8px;
+  background-color: var(--color-accent);
+  color: var(--color-accent-text);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mobileRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Guest Banner */
+.guestBanner {
+  background: linear-gradient(90deg, var(--color-bg-alt) 0%, var(--color-surface) 100%);
+  border-bottom: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.guestBannerContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.guestBannerLink {
+  color: var(--color-primary);
+  font-weight: var(--weight-bold);
+  text-decoration: underline;
+}
+
+.guestBannerDismiss {
+  background: transparent;
+  border: none;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.guestBannerDismiss:hover {
+  color: var(--color-text);
+}
+
+.guestBannerDismiss:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+/* ---- Main content ---- */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: var(--space-6) var(--space-8);
+  max-width: var(--content-max-width);
+  width: 100%;
+}
+
+/* ---- Bottom tab bar (mobile) ---- */
+.bottomBar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-bar-height);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  z-index: var(--z-sticky);
+}
+
+.bottomNav {
+  display: flex;
+  height: 100%;
+}
+
+.bottomLink {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.bottomLink:hover {
+  text-decoration: none;
+}
+
+.bottomLink--active {
+  color: var(--color-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.bottomIcon {
+  font-size: var(--text-xl);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: var(--space-4);
+    padding-bottom: calc(var(--bottom-bar-height) + var(--space-4));
+  }
+
+  .bottomBar {
+    display: block;
+  }
+
+  .mobileHeader {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .mobileHeaderTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobileHeader {
+    display: none;
+  }
+}
